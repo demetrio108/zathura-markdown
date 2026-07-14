@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="addon">
+  <id>org.pwmt.zathura-markdown</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Zlib</project_license>
+  <developer id="org.pwmt">
+    <name>pwmt</name>
+  </developer>
+  <extends>org.pwmt.zathura</extends>
+  <name>Zathura-Markdown</name>
+  <summary>Markdown plugin for zathura based on cmark and MuPDF</summary>
+  <url type="homepage">https://pwmt.org/projects/zathura/</url>
+  <releases>
+    <release version="2026.05.10" date="2026-05-10" />
+  </releases>
+</component>
