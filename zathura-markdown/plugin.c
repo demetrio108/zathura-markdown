@@ -19,4 +19,10 @@ ZATHURA_PLUGIN_REGISTER_WITH_FUNCTIONS("markdown", 2026, 5, 10,
                                            /* text/x-markdown is an alias of text/markdown in shared-mime-info,
                                             * so registering the canonical type alone covers both. */
                                            "text/markdown",
+                                           /* Markdown files usually contain plain prose, so both libmagic and
+                                            * glib's content-based sniff report them as text/plain. Newer zathura
+                                            * prefers that certain content-based guess over the uncertain
+                                            * filename-based text/markdown guess, so we must claim text/plain too
+                                            * or such files fail with "Could not determine file type." */
+                                           "text/plain",
                                        }))
