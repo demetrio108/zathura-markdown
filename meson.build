@@ -17,7 +17,7 @@ desktopdir = join_paths(datadir, 'applications')
 mupdf_required_version_major = 1
 mupdf_required_version_minor = 26
 
-zathura = dependency('zathura', version: '>=2026.01.30')
+zathura = dependency('zathura', version: '>=2026.07.18')
 girara = dependency('girara')
 glib = dependency('glib-2.0')
 cairo = dependency('cairo')

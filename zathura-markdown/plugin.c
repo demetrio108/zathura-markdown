@@ -2,7 +2,7 @@
 
 #include "plugin.h"
 
-ZATHURA_PLUGIN_REGISTER_WITH_FUNCTIONS("markdown", 2026, 5, 10,
+ZATHURA_PLUGIN_REGISTER_WITH_FUNCTIONS("markdown", VERSION,
                                        ZATHURA_PLUGIN_FUNCTIONS({
                                            .document_open           = markdown_document_open,
                                            .document_free           = markdown_document_free,
