@@ -3,7 +3,8 @@
 #include <mupdf/fitz.h>
 
 #include <glib-2.0/glib.h>
-#include <cmark.h>
+#include <cmark-gfm.h>
+#include <cmark-gfm-core-extensions.h>
 
 #include "plugin.h"
 #include <girara/log.h>
@@ -24,6 +25,53 @@ static void mupdf_error_callback(void* GIRARA_UNUSED(user), const char* message)
   girara_error("mupdf: %s", message);
 }
 
+/* Convert the markdown source to an HTML fragment using cmark's GitHub
+ * Flavored Markdown extensions. The caller takes ownership of the returned
+ * string (free with free). */
+static char* markdown_to_html(const char* markdown, size_t length) {
+  static const char* const extension_names[] = {"table", "strikethrough", "autolink", "tagfilter", "tasklist"};
+  static gsize extensions_registered         = 0;
+
+  if (g_once_init_enter(&extensions_registered)) {
+    cmark_gfm_core_extensions_ensure_registered();
+    g_once_init_leave(&extensions_registered, 1);
+  }
+
+  const int options       = CMARK_OPT_DEFAULT | CMARK_OPT_UNSAFE;
+  cmark_mem* mem          = cmark_get_default_mem_allocator();
+  cmark_parser* parser    = cmark_parser_new(options);
+  cmark_llist* extensions = NULL;
+
+  if (parser == NULL) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < G_N_ELEMENTS(extension_names); i++) {
+    cmark_syntax_extension* extension = cmark_find_syntax_extension(extension_names[i]);
+    if (extension == NULL) {
+      continue;
+    }
+    cmark_parser_attach_syntax_extension(parser, extension);
+    extensions = cmark_llist_append(mem, extensions, extension);
+  }
+
+  cmark_parser_feed(parser, markdown, length);
+  cmark_node* document = cmark_parser_finish(parser);
+  if (document == NULL) {
+    cmark_parser_free(parser);
+    cmark_llist_free(mem, extensions);
+    return NULL;
+  }
+
+  char* html = cmark_render_html(document, options, extensions);
+
+  cmark_node_free(document);
+  cmark_parser_free(parser);
+  cmark_llist_free(mem, extensions);
+
+  return html;
+}
+
 /* Wrap the HTML fragment produced by cmark in a minimal document with some
  * default styling so that mupdf lays it out in a readable fashion. The caller
  * takes ownership of the returned string (free with g_free). */
@@ -37,6 +85,7 @@ static char* markdown_wrap_html(const char* body) {
       "pre { background: #f4f4f4; padding: 0.5em; }\n"
       "blockquote { margin-left: 1em; padding-left: 1em; border-left: 3px solid #ccc; color: #555; }\n"
       "img { max-width: 100%; }\n"
+      "del { text-decoration: line-through; }\n"
       "table { border-collapse: collapse; }\n"
       "th, td { border: 1px solid #ccc; padding: 0.2em 0.5em; }\n"
       "</style>\n</head>\n<body>\n";
@@ -80,7 +129,7 @@ zathura_error_t markdown_document_open(zathura_document_t* document) {
   }
 
   /* convert markdown -> HTML fragment -> full HTML document */
-  char* html_body = cmark_markdown_to_html(markdown, markdown_length, CMARK_OPT_DEFAULT | CMARK_OPT_UNSAFE);
+  char* html_body = markdown_to_html(markdown, markdown_length);
   g_free(markdown);
   if (html_body == NULL) {
     error = ZATHURA_ERROR_UNKNOWN;

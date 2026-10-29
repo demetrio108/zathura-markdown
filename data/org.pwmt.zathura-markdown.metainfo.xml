@@ -8,7 +8,7 @@
   </developer>
   <extends>org.pwmt.zathura</extends>
   <name>Zathura-Markdown</name>
-  <summary>Markdown plugin for zathura based on cmark and MuPDF</summary>
+  <summary>Markdown plugin for zathura based on cmark-gfm and MuPDF</summary>
   <url type="homepage">https://pwmt.org/projects/zathura/</url>
   <releases>
     <release version="2026.05.10" date="2026-05-10" />

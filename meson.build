@@ -21,7 +21,14 @@ zathura = dependency('zathura', version: '>=2026.07.18')
 girara = dependency('girara')
 glib = dependency('glib-2.0')
 cairo = dependency('cairo')
-cmark = dependency('libcmark', version: '>=0.29')
+cmark = dependency('libcmark-gfm', version: '>=0.29')
+cmark_extensions = dependency('libcmark-gfm-extensions', version: '>=0.29', required: false)
+if not cmark_extensions.found()
+  # Some distributions (e.g. Arch) install the core extensions alongside
+  # libcmark-gfm in a single pkg-config file, so fall back to locating the
+  # shared library directly.
+  cmark_extensions = cc.find_library('cmark-gfm-extensions', required: true)
+endif
 mupdf = dependency('mupdf', required: false, version: '>=@0@.@1@'.format(mupdf_required_version_major, mupdf_required_version_minor))
 
 build_dependencies = [
@@ -30,6 +37,7 @@ build_dependencies = [
   glib,
   cairo,
   cmark,
+  cmark_extensions,
 ]
 
 if not mupdf.found()
